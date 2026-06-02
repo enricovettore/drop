@@ -36,11 +36,14 @@ export default function Home() {
     setLogs(["> Analisando estrutura do link..."]);
 
     try {
-      const response = await fetch("http://localhost:3001/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
+      const response = await fetch(
+        "https://drop-api-tm3x.onrender.com/api/analyze",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        },
+      );
 
       if (!response.ok) throw new Error("Falha.");
 
@@ -69,7 +72,7 @@ export default function Home() {
 
     // A string de conexão foi atualizada para incluir a extensão (targetExt)
     const eventSource = new EventSource(
-      `http://localhost:3001/api/download?url=${encodeURIComponent(url)}&format=${encodeURIComponent(selectedFormat)}&ext=${encodeURIComponent(targetExt)}`,
+      `https://drop-api-tm3x.onrender.com/api/download?url=${encodeURIComponent(url)}&format=${encodeURIComponent(selectedFormat)}&ext=${encodeURIComponent(targetExt)}`,
     );
 
     eventSource.onmessage = (event) => {
@@ -83,7 +86,7 @@ export default function Home() {
         ]);
 
         const link = document.createElement("a");
-        link.href = `http://localhost:3001/api/file/${encodeURIComponent(filename)}`;
+        link.href = `https://drop-api-tm3x.onrender.com/api/file/${encodeURIComponent(filename)}`;
         link.setAttribute("download", filename);
         document.body.appendChild(link);
         link.click();
