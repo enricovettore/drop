@@ -21,7 +21,7 @@ app.post("/api/analyze", (req, res) => {
   if (!url) return res.status(400).json({ error: "A URL é obrigatória." });
 
   exec(
-    `yt-dlp -J "${url}"`,
+    `yt-dlp --extractor-args "youtube:client=android" -J "${url}"`,
     { maxBuffer: 1024 * 1024 * 10 },
     (error, stdout, stderr) => {
       if (error) return res.status(500).json({ error: "Falha ao analisar." });
@@ -89,11 +89,11 @@ app.get("/api/download", (req, res) => {
 
   const outputPath = path.join(downloadsDir, "%(title)s.%(ext)s");
 
-  // Lógica inteligente de argumentos para o yt-dlp
-  let ytDlpArgs = [];
+  // Lógica inteligente de argumentos para o yt-dlp COM disfarce de Android
+  let ytDlpArgs = ["--extractor-args", "youtube:client=android"];
+
   if (ext === "mp3") {
-    // Argumentos exclusivos para extrair áudio
-    ytDlpArgs = [
+    ytDlpArgs.push(
       "-f",
       format,
       "--extract-audio",
@@ -102,10 +102,9 @@ app.get("/api/download", (req, res) => {
       "-o",
       outputPath,
       videoUrl,
-    ];
+    );
   } else {
-    // Argumentos exclusivos para vídeo
-    ytDlpArgs = [
+    ytDlpArgs.push(
       "-f",
       format,
       "--merge-output-format",
@@ -115,7 +114,7 @@ app.get("/api/download", (req, res) => {
       "-o",
       outputPath,
       videoUrl,
-    ];
+    );
   }
 
   const ytDlpProcess = spawn("yt-dlp", ytDlpArgs);
