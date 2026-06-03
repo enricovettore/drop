@@ -70,7 +70,6 @@ export default function Home() {
     setIsDownloading(true);
     setLogs(["> Acionando servidores de download..."]);
 
-    // A string de conexão foi atualizada para incluir a extensão (targetExt)
     const eventSource = new EventSource(
       `https://drop-api-tm3x.onrender.com/api/download?url=${encodeURIComponent(url)}&format=${encodeURIComponent(selectedFormat)}&ext=${encodeURIComponent(targetExt)}`,
     );
@@ -110,9 +109,9 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6 font-sans">
-      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl p-10">
-        <div className="text-center mb-10">
+    <main className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-4 sm:p-6 font-sans">
+      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl p-6 sm:p-10">
+        <div className="text-center mb-8 sm:mb-10">
           <h1 className="text-3xl font-semibold tracking-tight text-gray-900 mb-2">
             Drop
           </h1>
@@ -121,11 +120,11 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex gap-3 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <input
             type="url"
             placeholder="https://www.youtube.com/..."
-            className="flex-1 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50"
+            className="flex-1 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={isAnalyzing || isDownloading}
@@ -133,7 +132,7 @@ export default function Home() {
           <button
             onClick={handleAnalyze}
             disabled={isAnalyzing || isDownloading || !url}
-            className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white font-medium text-sm px-6 py-3 rounded-xl transition-colors min-w-[120px]"
+            className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white font-medium text-sm w-full sm:w-auto px-6 py-3 rounded-xl transition-colors sm:min-w-[120px]"
           >
             {isAnalyzing ? (
               <>
@@ -166,12 +165,12 @@ export default function Home() {
         </div>
 
         {videoData && (
-          <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex gap-4 mb-4">
+          <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 mb-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col sm:flex-row gap-4 mb-5">
               <img
                 src={videoData.thumbnail}
                 alt="Capa"
-                className="w-32 h-auto rounded-lg object-cover"
+                className="w-full sm:w-32 h-auto rounded-lg object-cover"
               />
               <div className="flex flex-col justify-center overflow-hidden">
                 <h3
@@ -187,9 +186,9 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <select
-                  className="flex-1 bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none disabled:opacity-50"
+                  className="flex-1 w-full bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none disabled:opacity-50"
                   value={selectedFormat}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -207,7 +206,7 @@ export default function Home() {
                 </select>
 
                 <select
-                  className="w-28 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none disabled:opacity-50"
+                  className="w-full sm:w-28 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none disabled:opacity-50"
                   value={targetExt}
                   onChange={(e) => setTargetExt(e.target.value)}
                   disabled={isDownloading || selectedFormat === "bestaudio"}
