@@ -123,7 +123,7 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <input
             type="url"
-            placeholder="https://www.youtube.com/..."
+            placeholder="https://www.drop-seu-link..."
             className="flex-1 w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50"
             value={url}
             onChange={(e) => setUrl(e.target.value)}

@@ -89,13 +89,30 @@ app.get("/api/download", (req, res) => {
 
   const outputPath = path.join(downloadsDir, "%(title)s.%(ext)s");
 
-  // Lógica inteligente de argumentos para o yt-dlp COM disfarce de Android
+  // Lógica inteligente de argumentos para o yt-dlp COM disfarce de Android e Fallback
   let ytDlpArgs = ["--extractor-args", "youtube:client=android"];
 
+  // 1. Limpamos o formato (se vier 'null', 'undefined' ou vazio, tratamos como falso)
+  const cleanFormat =
+    format && format !== "null" && format !== "undefined" ? format : null;
+
+  // 2. Criamos a regra de Fallback (O plano A falhou? Vai pro plano B ou C)
+  let formatQuery;
+  if (ext === "mp3") {
+    formatQuery = cleanFormat
+      ? `${cleanFormat}/bestaudio/best`
+      : "bestaudio/best";
+  } else {
+    formatQuery = cleanFormat
+      ? `${cleanFormat}/bestvideo+bestaudio/best`
+      : "bestvideo+bestaudio/best";
+  }
+
+  // 3. Injetamos os argumentos finais
   if (ext === "mp3") {
     ytDlpArgs.push(
       "-f",
-      format,
+      formatQuery,
       "--extract-audio",
       "--audio-format",
       "mp3",
@@ -106,7 +123,7 @@ app.get("/api/download", (req, res) => {
   } else {
     ytDlpArgs.push(
       "-f",
-      format,
+      formatQuery,
       "--merge-output-format",
       ext,
       "--remux-video",
