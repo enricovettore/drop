@@ -1,6 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 type Format = { format_id: string; label: string };
 type VideoData = {
@@ -20,6 +23,7 @@ export default function Home() {
   const [logs, setLogs] = useState<string[]>([
     "> Sistema pronto. Insira uma URL.",
   ]);
+  const [isDesktopApp, setIsDesktopApp] = useState(false);
 
   const terminalRef = useRef<HTMLDivElement>(null);
 
@@ -29,6 +33,16 @@ export default function Home() {
     }
   }, [logs]);
 
+  useEffect(() => {
+    // Lê o "RG" do navegador para saber se é o motor do Electron
+    if (typeof window !== "undefined") {
+      const userAgent = navigator.userAgent.toLowerCase();
+      if (userAgent.includes("electron")) {
+        setIsDesktopApp(true);
+      }
+    }
+  }, []);
+
   const handleAnalyze = async () => {
     if (!url) return;
     setIsAnalyzing(true);
@@ -36,14 +50,11 @@ export default function Home() {
     setLogs(["> Analisando estrutura do link..."]);
 
     try {
-      const response = await fetch(
-        "https://drop-api-tm3x.onrender.com/api/analyze",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
 
       if (!response.ok) throw new Error("Falha.");
 
@@ -55,7 +66,7 @@ export default function Home() {
       }
 
       setLogs((prev) => [...prev, "> Análise concluída com sucesso."]);
-    } catch (error) {
+    } catch {
       setLogs((prev) => [
         ...prev,
         "> [ERRO] Falha ao analisar. Verifique a URL.",
@@ -71,7 +82,7 @@ export default function Home() {
     setLogs(["> Acionando servidores de download..."]);
 
     const eventSource = new EventSource(
-      `https://drop-api-tm3x.onrender.com/api/download?url=${encodeURIComponent(url)}&format=${encodeURIComponent(selectedFormat)}&ext=${encodeURIComponent(targetExt)}`,
+      `${API_BASE_URL}/api/download?url=${encodeURIComponent(url)}&format=${encodeURIComponent(selectedFormat)}&ext=${encodeURIComponent(targetExt)}`,
     );
 
     eventSource.onmessage = (event) => {
@@ -85,7 +96,7 @@ export default function Home() {
         ]);
 
         const link = document.createElement("a");
-        link.href = `https://drop-api-tm3x.onrender.com/api/file/${encodeURIComponent(filename)}`;
+        link.href = `${API_BASE_URL}/api/file/${encodeURIComponent(filename)}`;
         link.setAttribute("download", filename);
         document.body.appendChild(link);
         link.click();
@@ -109,7 +120,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-4 sm:p-6 font-sans">
+    <main className="min-h-screen bg-[#f5f5f7] flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
       <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl p-6 sm:p-10">
         <div className="text-center mb-8 sm:mb-10">
           <h1 className="text-3xl font-semibold tracking-tight text-gray-900 mb-2">
@@ -167,9 +178,11 @@ export default function Home() {
         {videoData && (
           <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 mb-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row gap-4 mb-5">
-              <img
+              <Image
                 src={videoData.thumbnail}
                 alt="Capa"
+                width={128}
+                height={72}
                 className="w-full sm:w-32 h-auto rounded-lg object-cover"
               />
               <div className="flex flex-col justify-center overflow-hidden">
@@ -271,6 +284,52 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Nova Seção: Download do App Desktop - Só aparece na Web */}
+      {!isDesktopApp && (
+        <div className="mt-12 text-center w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">
+            Baixe o Drop para o seu computador
+          </h2>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            {/* Botão Mac */}
+            <a
+              href="https://github.com/enricovettore/drop/releases/download/v1.0.0/Drop-1.0.0-arm64.dmg"
+              className="flex items-center justify-center gap-3 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md text-gray-800 font-medium text-sm px-6 py-3.5 rounded-xl transition-all cursor-pointer"
+            >
+              <svg
+                className="w-5 h-5"
+                viewBox="0 0 384 512"
+                fill="currentColor"
+              >
+                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+              </svg>
+              Baixar para Mac
+            </a>
+
+            {/* Botão Windows */}
+            <a
+              href="https://github.com/enricovettore/drop/releases/download/v1.0.0/Drop.Setup.1.0.0.exe"
+              className="flex items-center justify-center gap-3 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md text-gray-800 font-medium text-sm px-6 py-3.5 rounded-xl transition-all cursor-pointer"
+            >
+              <svg
+                className="w-5 h-5"
+                viewBox="0 0 448 512"
+                fill="currentColor"
+              >
+                <path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z" />
+              </svg>
+              Baixar para Windows
+            </a>
+          </div>
+          <p className="mt-5 text-xs text-gray-400 px-4">
+            A versão desktop utiliza o hardware da sua máquina, garantindo
+            downloads mais rápidos e sem limites de servidores.
+          </p>
+        </div>
+      )}
+        </div>
+      )}
     </main>
   );
 }

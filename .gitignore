@@ -1,0 +1,13 @@
+# Ignora arquivos pesados do App Desktop
+desktop/dist/
+desktop/ui/
+desktop/node_modules/
+
+# Ignora dependências da Interface Web e API
+web/node_modules/
+web/.next/
+web/out/
+api/node_modules/
+
+# Ignora arquivos de sistema do Mac
+.DS_Store

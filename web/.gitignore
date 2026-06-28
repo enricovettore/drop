@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Electron build artifacts
+desktop/dist/
+desktop/ui/
+desktop/node_modules/
+
+# Ignorar arquivos pesados do Electron
+desktop/dist/
+desktop/ui/
+desktop/node_modules/
