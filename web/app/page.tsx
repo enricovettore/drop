@@ -122,10 +122,24 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#f5f5f7] flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
       <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl p-6 sm:p-10">
-        <div className="text-center mb-8 sm:mb-10">
-          <h1 className="text-3xl font-semibold tracking-tight text-gray-900 mb-2">
-            Drop
-          </h1>
+        {/* Cabeçalho com Logo Ajustada */}
+        <div className="flex flex-col items-center text-center mb-7 sm:mb-8">
+          <div className="flex items-center justify-center gap-2 mb-3 select-none">
+            <Image
+              src="/logo.png"
+              alt="Drop Logo"
+              width={38}
+              height={38}
+              className="rounded-[10px] shadow-sm"
+            />
+            <span className="font-extrabold text-2xl tracking-tight text-gray-900">
+              Drop
+            </span>
+          </div>
+
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900 mb-1.5">
+            Baixe seus vídeos
+          </h2>
           <p className="text-gray-500 text-sm">
             Cole o link para extrair e baixar o conteúdo.
           </p>
@@ -287,7 +301,7 @@ export default function Home() {
 
       {/* Nova Seção: Download do App Desktop - Só aparece na Web */}
       {!isDesktopApp && (
-        <div className="mt-12 text-center w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
+        <div className="mt-6 text-center w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">
             Baixe o Drop para o seu computador
           </h2>
@@ -295,7 +309,7 @@ export default function Home() {
             {/* Botão Mac */}
             <a
               href="https://github.com/enricovettore/drop/releases/download/v1.0.0/Drop-1.0.0-arm64.dmg"
-              className="flex items-center justify-center gap-3 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md text-gray-800 font-medium text-sm px-6 py-3.5 rounded-xl transition-all cursor-pointer"
+              className="flex items-center justify-center gap-3 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md text-gray-800 font-medium text-sm w-full sm:w-[220px] py-3.5 rounded-xl transition-all cursor-pointer"
             >
               <svg
                 className="w-5 h-5"
@@ -310,7 +324,7 @@ export default function Home() {
             {/* Botão Windows */}
             <a
               href="https://github.com/enricovettore/drop/releases/download/v1.0.0/Drop.Setup.1.0.0.exe"
-              className="flex items-center justify-center gap-3 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md text-gray-800 font-medium text-sm px-6 py-3.5 rounded-xl transition-all cursor-pointer"
+              className="flex items-center justify-center gap-3 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md text-gray-800 font-medium text-sm w-full sm:w-[220px] py-3.5 rounded-xl transition-all cursor-pointer"
             >
               <svg
                 className="w-5 h-5"
