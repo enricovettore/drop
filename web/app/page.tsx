@@ -121,22 +121,24 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#f5f5f7] flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
-      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl p-6 sm:p-10">
-        {/* Cabeçalho com Logo Ajustada */}
-        <div className="flex flex-col items-center text-center mb-7 sm:mb-8">
-          <div className="flex items-center justify-center gap-2 mb-3 select-none">
-            <Image
-              src="/logo.png"
-              alt="Drop Logo"
-              width={38}
-              height={38}
-              className="rounded-[10px] shadow-sm"
-            />
-            <span className="font-extrabold text-2xl tracking-tight text-gray-900">
-              Drop
-            </span>
-          </div>
+      {/* Branding Externo (Logo + Drop) */}
+      <div className="flex items-center justify-center gap-3 mb-8 select-none">
+        <Image
+          src="/logo.png"
+          alt="Drop Logo"
+          width={44}
+          height={44}
+          className="rounded-[12px] shadow-sm"
+        />
+        <span className="font-extrabold text-3xl tracking-tight text-gray-900">
+          Drop
+        </span>
+      </div>
 
+      {/* Cartão Branco Principal */}
+      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl p-6 sm:p-10">
+        {/* Cabeçalho do Cartão */}
+        <div className="flex flex-col items-center text-center mb-7 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900 mb-1.5">
             Baixe seus vídeos
           </h2>
