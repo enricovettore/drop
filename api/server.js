@@ -13,6 +13,9 @@ if (!fs.existsSync(downloadsDir)) {
   fs.mkdirSync(downloadsDir);
 }
 
+// Para o Render, usar o caminho absoluto do yt-dlp evita falhas de "command not found"
+const YTDLP_BIN = "/usr/local/bin/yt-dlp";
+
 // ==========================================
 // ROTA 1: ANÁLISE
 // ==========================================
@@ -21,15 +24,25 @@ app.post("/api/analyze", (req, res) => {
   if (!url) return res.status(400).json({ error: "A URL é obrigatória." });
 
   exec(
-    `yt-dlp --extractor-args "youtube:client=android" -J "${url}"`,
+    `${YTDLP_BIN} --extractor-args "youtube:client=android" -J "${url}"`,
     { maxBuffer: 1024 * 1024 * 10 },
     (error, stdout, stderr) => {
-      if (error) return res.status(500).json({ error: "Falha ao analisar." });
+      // 🔥 1. CAPTURA DO ERRO DE SISTEMA (O ASSASSINO SILENCIOSO)
+      if (error) {
+        console.error("🔥 ERRO FATAL DO SISTEMA AO RODAR YT-DLP:");
+        console.error("Mensagem:", error.message);
+        console.error("Stderr:", stderr);
+
+        return res.status(500).json({
+          error: "Falha na execução do sistema.",
+          details: error.message,
+          stderr: stderr,
+        });
+      }
 
       try {
         const data = JSON.parse(stdout);
 
-        // Filtro mais permissivo: rejeita apenas o que é explicitamente "sem vídeo" ou "audio only"
         const videoFormats = data.formats.filter(
           (f) => f.vcodec !== "none" && f.resolution !== "audio only",
         );
@@ -39,14 +52,11 @@ app.post("/api/analyze", (req, res) => {
 
         for (let i = videoFormats.length - 1; i >= 0; i--) {
           const f = videoFormats[i];
-
-          // Se o site não informar a altura, usamos a própria resolução ou um padrão
           const resIdentifier = f.height || f.resolution || "padrao";
 
           if (!uniqueResolutions.includes(resIdentifier)) {
             uniqueResolutions.push(resIdentifier);
 
-            // Monta o rótulo de forma inteligente
             const labelName = f.height
               ? `${f.height}p`
               : f.resolution !== "audio only"
@@ -70,7 +80,12 @@ app.post("/api/analyze", (req, res) => {
           formats: cleanFormats,
         });
       } catch (parseError) {
-        res.status(500).json({ error: "Erro ao processar dados." });
+        // 🔥 2. CAPTURA DO ERRO DE LEITURA (JSON INVÁLIDO)
+        console.error("🔥 ERRO AO LER DADOS DO VÍDEO:", parseError.message);
+        res.status(500).json({
+          error: "Falha ao interpretar dados.",
+          details: parseError.message,
+        });
       }
     },
   );
@@ -89,14 +104,10 @@ app.get("/api/download", (req, res) => {
 
   const outputPath = path.join(downloadsDir, "%(title)s.%(ext)s");
 
-  // Lógica inteligente de argumentos para o yt-dlp COM disfarce de Android e Fallback
   let ytDlpArgs = ["--extractor-args", "youtube:client=android"];
-
-  // 1. Limpamos o formato (se vier 'null', 'undefined' ou vazio, tratamos como falso)
   const cleanFormat =
     format && format !== "null" && format !== "undefined" ? format : null;
 
-  // 2. Criamos a regra de Fallback (O plano A falhou? Vai pro plano B ou C)
   let formatQuery;
   if (ext === "mp3") {
     formatQuery = cleanFormat
@@ -108,7 +119,6 @@ app.get("/api/download", (req, res) => {
       : "bestvideo+bestaudio/best";
   }
 
-  // 3. Injetamos os argumentos finais
   if (ext === "mp3") {
     ytDlpArgs.push(
       "-f",
@@ -134,7 +144,8 @@ app.get("/api/download", (req, res) => {
     );
   }
 
-  const ytDlpProcess = spawn("yt-dlp", ytDlpArgs);
+  // Usando a constante com o caminho absoluto aqui também
+  const ytDlpProcess = spawn(YTDLP_BIN, ytDlpArgs);
   let finalFilename = "";
 
   ytDlpProcess.stdout.on("data", (data) => {
@@ -144,7 +155,6 @@ app.get("/api/download", (req, res) => {
       if (message) {
         res.write(`data: ${message}\n\n`);
 
-        // Captura blindada do nome do arquivo final
         if (message.includes("Destination:")) {
           finalFilename = message.split("Destination:")[1].trim();
         } else if (message.includes("Merging formats into")) {
@@ -165,10 +175,21 @@ app.get("/api/download", (req, res) => {
     if (errorMsg) res.write(`data: [AVISO/ERRO]: ${errorMsg}\n\n`);
   });
 
+  // Se o spawn falhar antes de iniciar (ex: não achar o executável)
+  ytDlpProcess.on("error", (error) => {
+    console.error("🔥 ERRO FATAL NO DOWNLOAD:", error.message);
+    res.write(
+      `data: [ERRO CRÍTICO]: Falha ao iniciar download no servidor.\n\n`,
+    );
+    res.end();
+  });
+
   ytDlpProcess.on("close", (code) => {
     if (finalFilename) {
       const baseName = path.basename(finalFilename);
       res.write(`data: [ARQUIVO_PRONTO] ${baseName}\n\n`);
+    } else if (code !== 0) {
+      res.write(`data: > Processo finalizou com erros (Código: ${code}).\n\n`);
     }
     res.write(`data: > Processo finalizado no servidor.\n\n`);
     res.end();
@@ -186,7 +207,6 @@ app.get("/api/file/:filename", (req, res) => {
       if (err) {
         console.error("Erro ao enviar o arquivo:", err);
       }
-      // Independente de dar erro ou sucesso no envio, apaga o arquivo do servidor
       fs.unlink(filepath, (unlinkErr) => {
         if (unlinkErr)
           console.error("Erro ao apagar arquivo temporário:", unlinkErr);
